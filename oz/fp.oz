@@ -127,6 +127,7 @@ in
         local H in
         H|_ = {DoCurry Data}
         H
+        end
     end
 end
 
