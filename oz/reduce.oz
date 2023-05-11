@@ -32,4 +32,8 @@ end
 %X = tree(tree('+' tree(tree('*' x) x)) tree(tree('*' y) y))
 X = tree(tree('+' tree(tree('*' 5) 5)) tree(tree('*' 3) 3)) % x = 5, y = 3
 
+%Y = tree(tree('*' tree(tree('+' x) 1)) tree(tree('-' x) 1))
+Y = tree(tree('*' tree(tree('+' 4) 1)) tree(tree('-' 4) 1)) % x = 4
+
 {Browse {Evaluate X}}
+{Browse {Evaluate Y}}

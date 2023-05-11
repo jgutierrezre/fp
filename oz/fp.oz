@@ -158,6 +158,10 @@ end
 % {Browse T}
 
 {Browse {Curry {Infix2Prefix {AtomToList '( x * x ) + ( y * y )'}}}}
+% tree(tree('+' tree(tree('*' x) x)) tree(tree('*' y)) y)
 
 {Browse {StringListJoin {Infix2Prefix {AtomToList '( x * x ) + ( y * y )'}}}}
-% tree(tree('+' tree(tree('*' x) x)) tree(tree('*' y)) y)
+% + * x x * y y
+
+{Browse {Curry {Infix2Prefix {AtomToList '( x + 1 ) * ( x - 1 )'}}}}
+% tree(tree('*' tree(tree('+' x) 1)) tree(tree('-' x) 1))
