@@ -31,7 +31,8 @@ local
                     [tree(tree({String.toAtom H} A) C) D]
                 end
             else
-                [{String.toAtom H} T]
+                if {String.isInt H} then [{String.toInt H} T]
+                else [{String.toAtom H} T] end
             end
         end
     end
@@ -40,5 +41,6 @@ in
         local H in
         H|_ = {DoCurry Data}
         H
+        end
     end
 end

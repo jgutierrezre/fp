@@ -118,7 +118,8 @@ local
                     [tree(tree({String.toAtom H} A) C) D]
                 end
             else
-                [{String.toAtom H} T]
+                if {String.isInt H} then [{String.toInt H} T]
+                else [{String.toAtom H} T] end
             end
         end
     end
@@ -127,6 +128,35 @@ in
         local H in
         H|_ = {DoCurry Data}
         H
+        end
+    end
+end
+
+local
+    fun {RightEvaluate T}
+        if {Number.is T} then T
+        else {Evaluate T} end
+    end
+    fun {Operate Op A B}
+        case Op
+        of '+' then A + B
+        [] '-' then A - B
+        [] '*' then A * B
+        [] '/' then A / B
+        end
+    end
+in
+    fun {Evaluate T}
+        case T
+        of '+' then [T nil 1]
+        [] '-' then [T nil 1]
+        [] '*' then [T nil 1]
+        [] '/' then [T nil 1]
+        else
+            Op Left D in
+            Op|Left|D|nil = {Evaluate T.1}
+            if D == 1 then [Op {RightEvaluate T.2} 0]
+            elseif D == 0 then {Operate Op Left {RightEvaluate T.2}} end
         end
     end
 end
@@ -149,6 +179,8 @@ end
 {Browse {StringListJoin {Infix2Prefix {AtomToList 'x * x'}}}}
 
 {Browse {Curry {Infix2Prefix {AtomToList 'x * x'}}}}
+
+{Browse {Evaluate {Curry {Infix2Prefix {AtomToList '3 * 3'}}}}}
 % tree(tree('*' x) x)
 
 
@@ -165,3 +197,5 @@ end
 
 {Browse {Curry {Infix2Prefix {AtomToList '( x + 1 ) * ( x - 1 )'}}}}
 % tree(tree('*' tree(tree('+' x) 1)) tree(tree('-' x) 1))
+
+{Browse {Evaluate {Curry {Infix2Prefix {AtomToList '( 3 + 1 ) * ( 3 - 1 )'}}}}}

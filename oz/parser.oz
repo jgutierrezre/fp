@@ -37,12 +37,14 @@ proc {ParseString S}
             end
         else
             % Check if X is defined
+            % Params must change to be the number
             {Browse X}
             if {Value.hasFeature @FUNCTIONS X} then
                 % if yes, then call it
                 {Browse 'Function defined'}
                 {Browse @FUNCTIONS.X}
                 {Browse @FUNCTIONS.X.body}
+                % @FUNCTIONS.X.params.1 = 10
             else
                 % else, throw error
                 {Browse 'Error: Function not defined'}
@@ -73,6 +75,7 @@ S2 = 'square 10'
 % square:function(body:[x * x] params:[x])
 % [x * x]
 {Browse ''}
+{Browse @FUNCTIONS}
 
 {ParseString 'double 10'}
 % double
