@@ -28,6 +28,31 @@ in
     end
 end
 
+% Admit vars
+% 'fun fourtimes x = var y = x * x in y + y'}
+% function(params: 'x' body: 'y + y' var: 'y' varbody:'x * x')
+
+% local
+%     fun {DoSplitParamsAndBody L P}
+%         case L
+%         of X|Xr then
+%             case X
+%             of '=' then 
+%                 case Xr
+%                 of V|R then
+%                     case V
+%                     of 'var' then function(params:{List.reverse P} body:Xr varbody:R)
+%                 else function(params:{List.reverse P} body:Xr)
+%             else {DoSplitParamsAndBody Xr X|P}
+%             end
+%         end
+%     end
+% in
+%     fun {SplitParamsAndBody L}
+%         {DoSplitParamsAndBody L nil}
+%     end
+% end
+
 proc {ParseString S}
     case {AtomToList S}
     of X|Xr then
@@ -51,8 +76,24 @@ proc {ParseString S}
                 {Browse 'Function defined'}
                 % {Browse @FUNCTIONS.X}
                 % {Browse @FUNCTIONS.X.body}
-                if {List.length Xr}>1 then FUNCTIONS := {Adjoin @FUNCTIONS functions(X:{Adjoin @FUNCTIONS.X function(body: {Map @FUNCTIONS.X.body fun {$ P} if {List.member P ['*' '/' '+' '-' '(' ')']} then P else if {List.is {Filter {List.mapInd @FUNCTIONS.X.params fun {$ Is Z} if Z == P then Xr.Is else nil end end} fun{$S} S\=nil end}.1} then {Filter {List.mapInd @FUNCTIONS.X.params fun {$ Is Z} if Z == P then Xr.Is else nil end end} fun{$S} S\=nil end}.1.1 else {Filter {List.mapInd @FUNCTIONS.X.params fun {$ Is Z} if Z == P then Xr.Is else nil end end} fun{$S} S\=nil end}.1 end end end} params:Xr)})}
-                else FUNCTIONS := {Adjoin @FUNCTIONS functions(X:{Adjoin @FUNCTIONS.X function(body: {Map @FUNCTIONS.X.body fun {$ P} if {List.member P ['*' '/' '+' '-' '(' ')']} then P else Xr.1 end end} params:Xr)})} end
+                if {List.length Xr}>1 then 
+                    FUNCTIONS := {Adjoin @FUNCTIONS functions(
+                        X:{Adjoin @FUNCTIONS.X function(
+                            body: {Map @FUNCTIONS.X.body fun {$ P} 
+                                if {List.member P ['*' '/' '+' '-' '(' ')']} then P 
+                                else if {List.is {Filter {List.mapInd @FUNCTIONS.X.params fun {$ Is Z} if Z == P then Xr.Is 
+                                else nil end end} fun{$S} S\=nil end}.1} then {Filter {List.mapInd @FUNCTIONS.X.params fun {$ Is Z} 
+                                    if Z == P then Xr.Is 
+                                    else nil end end} fun{$S} S\=nil end}.1.1 
+                                else {Filter {List.mapInd @FUNCTIONS.X.params fun {$ Is Z} 
+                                    if Z == P then Xr.Is 
+                                    else nil end end} fun{$S} S\=nil end}.1 end end end} 
+                            params:Xr)})}
+                else FUNCTIONS := {Adjoin @FUNCTIONS functions(X:{Adjoin @FUNCTIONS.X function(
+                    body: {Map @FUNCTIONS.X.body fun {$ P} 
+                        if {List.member P ['*' '/' '+' '-' '(' ')']} then P 
+                        else Xr.1 end end} 
+                    params:Xr)})} end
                 
                 {Browse {Curry {Infix2Prefix @FUNCTIONS.X.body}}}
                 {Browse 'Result of evaluation'}
@@ -65,7 +106,6 @@ proc {ParseString S}
     end
 end
 
-% fun {ApplyParams }
 
 FUNCTIONS = {Cell.new nil}
 
@@ -163,3 +203,23 @@ FUNCTIONS = {Cell.new nil}
 % 34
 {Browse ''}
 
+% ------------------------------------------------------------------------------
+% FIFTH EXAMPLE: fourtimes
+{ParseString 'fun fourtimes x = var y = x * x in y + y'}
+    % Function added
+    % Tree Added for
+    % + * x x * x x
+    % tree(tree('+' tree(tree('*' x) x)) tree(tree('*' x) x))
+    {Browse ''}
+    
+    {Browse @FUNCTIONS}
+    % functions(square:function(body:[x * x] params:[x]) double:function(body:[x + x] params:[x]) sum:function(body:[x + y] params:[x y]) test:function(body:[( x * x ) + ( y * y )] params:[x y]))
+    {Browse ''}
+    
+    {ParseString 'test 3 5'}
+    % test
+    % Function defined
+    % tree(tree('+' tree(tree('*' 3) 3)) tree(tree('*' 5) 5))
+    % Result of evaluation
+    % 34
+    {Browse ''}
