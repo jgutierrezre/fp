@@ -38,6 +38,9 @@ proc {ParseString S}
             case Xr
             of Y|Yr then
                 {AddFunction functions(Y:{SplitParamsAndBody Yr})}
+                {Browse 'Tree Added for'}
+                {Browse {StringListJoin {Infix2Prefix @FUNCTIONS.Y.body}}}
+                {Browse {Curry {Infix2Prefix @FUNCTIONS.Y.body}}}
             end
         else
             % Check if X is defined
@@ -46,13 +49,14 @@ proc {ParseString S}
             if {Value.hasFeature @FUNCTIONS X} then
                 % if yes, then call it
                 {Browse 'Function defined'}
-                {Browse @FUNCTIONS.X}
-                {Browse @FUNCTIONS.X.body}
-                % {Browse {Map @FUNCTIONS.X.body fun {$ P} if {List.member P ['*' '/' '+' '-']} then P else Xr.1 end end}}
-                % {Browse {Map @FUNCTIONS.X.body fun {$ P} if {List.member P ['*' '/' '+' '-' '(' ')']} then P else if {List.is {Filter {List.mapInd @FUNCTIONS.X.params fun {$ Is Z} if Z == P then Xr.Is else nil end end} fun{$S} S\=nil end}.1} then {Filter {List.mapInd @FUNCTIONS.X.params fun {$ Is Z} if Z == P then Xr.Is else nil end end} fun{$S} S\=nil end}.1.1 else {Filter {List.mapInd @FUNCTIONS.X.params fun {$ Is Z} if Z == P then Xr.Is else nil end end} fun{$S} S\=nil end}.1 end end end}}
-                {Browse {List.length Xr}}
+                % {Browse @FUNCTIONS.X}
+                % {Browse @FUNCTIONS.X.body}
                 if {List.length Xr}>1 then FUNCTIONS := {Adjoin @FUNCTIONS functions(X:{Adjoin @FUNCTIONS.X function(body: {Map @FUNCTIONS.X.body fun {$ P} if {List.member P ['*' '/' '+' '-' '(' ')']} then P else if {List.is {Filter {List.mapInd @FUNCTIONS.X.params fun {$ Is Z} if Z == P then Xr.Is else nil end end} fun{$S} S\=nil end}.1} then {Filter {List.mapInd @FUNCTIONS.X.params fun {$ Is Z} if Z == P then Xr.Is else nil end end} fun{$S} S\=nil end}.1.1 else {Filter {List.mapInd @FUNCTIONS.X.params fun {$ Is Z} if Z == P then Xr.Is else nil end end} fun{$S} S\=nil end}.1 end end end} params:Xr)})}
                 else FUNCTIONS := {Adjoin @FUNCTIONS functions(X:{Adjoin @FUNCTIONS.X function(body: {Map @FUNCTIONS.X.body fun {$ P} if {List.member P ['*' '/' '+' '-' '(' ')']} then P else Xr.1 end end} params:Xr)})} end
+                
+                {Browse {Curry {Infix2Prefix @FUNCTIONS.X.body}}}
+                {Browse 'Result of evaluation'}
+                {Browse {Evaluate {Curry {Infix2Prefix @FUNCTIONS.X.body}}}}
             else
                 % else, throw error
                 {Browse 'Error: Function not defined'}
@@ -69,99 +73,93 @@ FUNCTIONS = {Cell.new nil}
 % nil (FUNCTIONS is empty as no function has been added yet)
 {Browse ''}
 
-% ----------------------
+% ------------------------------------------------------------------------------
 % FIRST EXAMPLE: SQUARE
 
 {ParseString 'fun square x = x * x'}
 % Function added
+% Tree Added for
+% * x x
+% tree(tree('*' x) x)
 {Browse ''}
 
 {Browse @FUNCTIONS}
 % functions(square:function(body:[x * x] params:[x])) (FUNCTIONS now contains the function square)
 {Browse ''}
 
-% Curry and reduce
-{Browse {StringListJoin {Infix2Prefix @FUNCTIONS.square.body}}}
-% Tree
-{Browse {Curry {Infix2Prefix @FUNCTIONS.square.body}}}
 % Evaluate
 {ParseString 'square 10'}
-{Browse ''}
-{Browse @FUNCTIONS}
-% functions(square:function(body:[x * x] params:[x])) (FUNCTIONS now contains the function square)
-{Browse ''}
-{Browse {Evaluate {Curry {Infix2Prefix @FUNCTIONS.square.body}}}}
-
+% square
+% Function defined
+% tree(tree('*' 10) 10)
+% Result of evaluation
+% 100
 {Browse '----------------------'}
 
-% ----------------------
+% ------------------------------------------------------------------------------
 % SECOND EXAMPLE: DOUBLE
 {ParseString 'fun double x = x + x'}
 % Function added
-{Browse ''}
-
-% Curry and reduce
-{Browse {StringListJoin {Infix2Prefix @FUNCTIONS.double.body}}}
-% Tree
-{Browse {Curry {Infix2Prefix @FUNCTIONS.double.body}}}
-% Evaluate
-{ParseString 'double 2'}
+% Tree Added for
+% + x x
+% tree(tree('+' x) x)
 {Browse ''}
 
 {Browse @FUNCTIONS}
 % functions(square:function(body:[x * x] params:[x]) double:function(body:[x + x] params:[x]))
 {Browse ''}
-{Browse {Evaluate {Curry {Infix2Prefix @FUNCTIONS.double.body}}}}
+
+% Evaluate
+{ParseString 'double 2'}
+% double
+% Function defined
+% tree(tree('+' 2) 2)
+% Result of evaluation
+% 4
+{Browse ''}
 
 {Browse '----------------------'}
 
-% ----------------------
+% ------------------------------------------------------------------------------
 % THIRD EXAMPLE: SUM
 {ParseString 'fun sum x y = x + y'}
 % Function added
+% Tree Added for
+% + x y
+% tree(tree('+' x) y)
 {Browse ''}
-
-% {ParseString 'sum 2 4'}
-% {Browse ''}
 
 {Browse @FUNCTIONS}
 % functions(square:function(body:[x * x] params:[x]) double:function(body:[x + x] params:[x]) sum:function(body:[x + y] params:[x y]))
 {Browse ''}
 
-% {Browse {Map @FUNCTIONS.sum.body fun {$ P} if {List.member P ['*' '/' '+' '-']} then P else if {List.is {Filter {List.mapInd @FUNCTIONS.sum.params fun {$ Is Z} if Z == P then [5 6].Is else nil end end} fun{$S} S\=nil end}.1} then {Filter {List.mapInd @FUNCTIONS.sum.params fun {$ Is Z} if Z == P then [5 6].Is else nil end end} fun{$S} S\=nil end}.1.1 else {Filter {List.mapInd @FUNCTIONS.sum.params fun {$ Is Z} if Z == P then [5 6].Is else nil end end} fun{$S} S\=nil end}.1 end end end}}
-% Curry and reduce
-{Browse {StringListJoin {Infix2Prefix @FUNCTIONS.sum.body}}}
-{Browse ''}
-% Tree
-{Browse {Curry {Infix2Prefix @FUNCTIONS.sum.body}}}
-{Browse ''}
 % Evaluate
 {ParseString 'sum 2 4'}
-{Browse @FUNCTIONS}
-% functions(square:function(body:[x * x] params:[x]) double:function(body:[x + x] params:[x]) sum:function(body:[x + y] params:[x y]))
+% sum
+% Function defined
+% tree(tree('+' 2) 4)
+% Result of evaluation
+% 6
 {Browse ''}
-{Browse {Evaluate {Curry {Infix2Prefix @FUNCTIONS.sum.body}}}}
-{Browse '----------------------'}
 
-% ----------------------
+% ------------------------------------------------------------------------------
 % FOURTH EXAMPLE: TEST
 {ParseString 'fun test x y = ( x * x ) + ( y * y )'}
 % Function added
-{Browse ''}
-
-{ParseString 'test 3 5'}
+% Tree Added for
+% + * x x * y y
+% tree(tree('+' tree(tree('*' x) x)) tree(tree('*' y) y))
 {Browse ''}
 
 {Browse @FUNCTIONS}
 % functions(square:function(body:[x * x] params:[x]) double:function(body:[x + x] params:[x]) sum:function(body:[x + y] params:[x y]) test:function(body:[( x * x ) + ( y * y )] params:[x y]))
 {Browse ''}
 
-% Curry and reduce
-{Browse {StringListJoin {Infix2Prefix @FUNCTIONS.test.body}}}
-% Tree
-{Browse {Curry {Infix2Prefix @FUNCTIONS.test.body}}}
-% Evaluate
-{Browse {Evaluate {Curry {Infix2Prefix @FUNCTIONS.test.body}}}}
+{ParseString 'test 3 5'}
+% test
+% Function defined
+% tree(tree('+' tree(tree('*' 3) 3)) tree(tree('*' 5) 5))
+% Result of evaluation
+% 34
+{Browse ''}
 
-{Browse '----------------------'}
-% {Browse {StringListJoin {Infix2Prefix {AtomToList 'x * x'}}}}
