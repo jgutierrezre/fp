@@ -48,7 +48,11 @@ proc {ParseString S}
                 {Browse 'Function defined'}
                 {Browse @FUNCTIONS.X}
                 {Browse @FUNCTIONS.X.body}
-                FUNCTIONS := {Adjoin @FUNCTIONS functions(X:{Adjoin @FUNCTIONS.X function(params:Xr)})}
+                % {Browse {Map @FUNCTIONS.X.body fun {$ P} if {List.member P ['*' '/' '+' '-']} then P else Xr.1 end end}}
+                % {Browse {Map @FUNCTIONS.X.body fun {$ P} if {List.member P ['*' '/' '+' '-' '(' ')']} then P else if {List.is {Filter {List.mapInd @FUNCTIONS.X.params fun {$ Is Z} if Z == P then Xr.Is else nil end end} fun{$S} S\=nil end}.1} then {Filter {List.mapInd @FUNCTIONS.X.params fun {$ Is Z} if Z == P then Xr.Is else nil end end} fun{$S} S\=nil end}.1.1 else {Filter {List.mapInd @FUNCTIONS.X.params fun {$ Is Z} if Z == P then Xr.Is else nil end end} fun{$S} S\=nil end}.1 end end end}}
+                {Browse {List.length Xr}}
+                if {List.length Xr}>1 then FUNCTIONS := {Adjoin @FUNCTIONS functions(X:{Adjoin @FUNCTIONS.X function(body: {Map @FUNCTIONS.X.body fun {$ P} if {List.member P ['*' '/' '+' '-' '(' ')']} then P else if {List.is {Filter {List.mapInd @FUNCTIONS.X.params fun {$ Is Z} if Z == P then Xr.Is else nil end end} fun{$S} S\=nil end}.1} then {Filter {List.mapInd @FUNCTIONS.X.params fun {$ Is Z} if Z == P then Xr.Is else nil end end} fun{$S} S\=nil end}.1.1 else {Filter {List.mapInd @FUNCTIONS.X.params fun {$ Is Z} if Z == P then Xr.Is else nil end end} fun{$S} S\=nil end}.1 end end end} params:Xr)})}
+                else FUNCTIONS := {Adjoin @FUNCTIONS functions(X:{Adjoin @FUNCTIONS.X function(body: {Map @FUNCTIONS.X.body fun {$ P} if {List.member P ['*' '/' '+' '-' '(' ')']} then P else Xr.1 end end} params:Xr)})} end
             else
                 % else, throw error
                 {Browse 'Error: Function not defined'}
@@ -67,9 +71,8 @@ FUNCTIONS = {Cell.new nil}
 
 % ----------------------
 % FIRST EXAMPLE: SQUARE
-S1 = 'fun square x = x * x'
-S2 = 'square 10'
-{ParseString S1}
+
+{ParseString 'fun square x = x * x'}
 % Function added
 {Browse ''}
 
@@ -77,24 +80,17 @@ S2 = 'square 10'
 % functions(square:function(body:[x * x] params:[x])) (FUNCTIONS now contains the function square)
 {Browse ''}
 
-{ParseString S2}
-% square
-% Function defined
-% square:function(body:[x * x] params:[x])
-% [x * x]
-{Browse ''}
-
-% {ParseString 'double 10'}
-% double
-% Error: Function not defined)
-% {Browse ''}
-
 % Curry and reduce
 {Browse {StringListJoin {Infix2Prefix @FUNCTIONS.square.body}}}
 % Tree
 {Browse {Curry {Infix2Prefix @FUNCTIONS.square.body}}}
 % Evaluate
-{Browse {Evaluate {Curry {Infix2Prefix {AtomToList '3 * 3'}}}}}
+{ParseString 'square 10'}
+{Browse ''}
+{Browse @FUNCTIONS}
+% functions(square:function(body:[x * x] params:[x])) (FUNCTIONS now contains the function square)
+{Browse ''}
+{Browse {Evaluate {Curry {Infix2Prefix @FUNCTIONS.square.body}}}}
 
 {Browse '----------------------'}
 
@@ -104,19 +100,18 @@ S2 = 'square 10'
 % Function added
 {Browse ''}
 
+% Curry and reduce
+{Browse {StringListJoin {Infix2Prefix @FUNCTIONS.double.body}}}
+% Tree
+{Browse {Curry {Infix2Prefix @FUNCTIONS.double.body}}}
+% Evaluate
 {ParseString 'double 2'}
 {Browse ''}
 
 {Browse @FUNCTIONS}
 % functions(square:function(body:[x * x] params:[x]) double:function(body:[x + x] params:[x]))
 {Browse ''}
-
-% Curry and reduce
-{Browse {StringListJoin {Infix2Prefix @FUNCTIONS.double.body}}}
-% Tree
-{Browse {Curry {Infix2Prefix @FUNCTIONS.double.body}}}
-% Evaluate
-{Browse {Evaluate {Curry {Infix2Prefix {AtomToList '3 * 3'}}}}}
+{Browse {Evaluate {Curry {Infix2Prefix @FUNCTIONS.double.body}}}}
 
 {Browse '----------------------'}
 
@@ -126,20 +121,26 @@ S2 = 'square 10'
 % Function added
 {Browse ''}
 
-{ParseString 'sum 2 4'}
-{Browse ''}
+% {ParseString 'sum 2 4'}
+% {Browse ''}
 
 {Browse @FUNCTIONS}
 % functions(square:function(body:[x * x] params:[x]) double:function(body:[x + x] params:[x]) sum:function(body:[x + y] params:[x y]))
 {Browse ''}
 
+% {Browse {Map @FUNCTIONS.sum.body fun {$ P} if {List.member P ['*' '/' '+' '-']} then P else if {List.is {Filter {List.mapInd @FUNCTIONS.sum.params fun {$ Is Z} if Z == P then [5 6].Is else nil end end} fun{$S} S\=nil end}.1} then {Filter {List.mapInd @FUNCTIONS.sum.params fun {$ Is Z} if Z == P then [5 6].Is else nil end end} fun{$S} S\=nil end}.1.1 else {Filter {List.mapInd @FUNCTIONS.sum.params fun {$ Is Z} if Z == P then [5 6].Is else nil end end} fun{$S} S\=nil end}.1 end end end}}
 % Curry and reduce
 {Browse {StringListJoin {Infix2Prefix @FUNCTIONS.sum.body}}}
+{Browse ''}
 % Tree
 {Browse {Curry {Infix2Prefix @FUNCTIONS.sum.body}}}
+{Browse ''}
 % Evaluate
-{Browse {Evaluate {Curry {Infix2Prefix {AtomToList '3 * 3'}}}}}
-
+{ParseString 'sum 2 4'}
+{Browse @FUNCTIONS}
+% functions(square:function(body:[x * x] params:[x]) double:function(body:[x + x] params:[x]) sum:function(body:[x + y] params:[x y]))
+{Browse ''}
+{Browse {Evaluate {Curry {Infix2Prefix @FUNCTIONS.sum.body}}}}
 {Browse '----------------------'}
 
 % ----------------------
@@ -160,7 +161,7 @@ S2 = 'square 10'
 % Tree
 {Browse {Curry {Infix2Prefix @FUNCTIONS.test.body}}}
 % Evaluate
-{Browse {Evaluate {Curry {Infix2Prefix {AtomToList '3 * 3'}}}}}
+{Browse {Evaluate {Curry {Infix2Prefix @FUNCTIONS.test.body}}}}
 
 {Browse '----------------------'}
 % {Browse {StringListJoin {Infix2Prefix {AtomToList 'x * x'}}}}
