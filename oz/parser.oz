@@ -12,37 +12,12 @@ proc {AddFunction F}
     FUNCTIONS := {Record.adjoin @FUNCTIONS F}
 end
 
-local
-    fun {DoSplitParamsAndBody L P}
-        case L
-        of X|Xr then
-            case X
-            of '=' then function(params:{List.reverse P} body:Xr)
-            else {DoSplitParamsAndBody Xr X|P}
-            end
-        end
-    end
-in
-    fun {SplitParamsAndBody L}
-        {DoSplitParamsAndBody L nil}
-    end
-end
-
-% Admit vars
-% 'fun fourtimes x = var y = x * x in y + y'}
-% function(params: 'x' body: 'y + y' var: 'y' varbody:'x * x')
-
 % local
 %     fun {DoSplitParamsAndBody L P}
 %         case L
 %         of X|Xr then
 %             case X
-%             of '=' then 
-%                 case Xr
-%                 of V|R then
-%                     case V
-%                     of 'var' then function(params:{List.reverse P} body:Xr varbody:R)
-%                 else function(params:{List.reverse P} body:Xr)
+%             of '=' then function(params:{List.reverse P} body:Xr)
 %             else {DoSplitParamsAndBody Xr X|P}
 %             end
 %         end
@@ -52,6 +27,35 @@ end
 %         {DoSplitParamsAndBody L nil}
 %     end
 % end
+
+% Admit vars
+% 'fun fourtimes x = var y = x * x in y + y'}
+% function(params: 'x' body: 'y + y' var: 'y' varbody:'x * x')
+local
+    fun {DoSplitParamsAndBody L P V VF} % P: lista de parametros , V: lista de variables , VF: si tiene variables o no
+        case L
+        of X|Xr then
+            case X
+            of '=' then 
+                case Xr 
+                of N|O then
+                    if N == 'var' then 
+                        {DoSplitParamsAndBody O P O.1|V true}
+                    else if VF then function(a:VF params:{List.reverse P} body:{List.takeWhile Xr fun{$X} X\='in' end} vars:{Map {List.reverse V} fun{$Y} {List.drop {List.dropWhile Xr fun{$X} X\='in' end} 1} end}.1) 
+                    else function(a:VF params:{List.reverse P} body:{List.takeWhile Xr fun{$X} X\='in' end} vars:{Map {List.reverse V} fun{$Y} {List.drop {List.dropWhile Xr fun{$X} X\='in' end} 1} end}) end end
+                end
+            [] 'in' then function(a:VF params:{List.reverse P} body:{List.takeWhile Xr fun{$X} X\='in' end} vars:{Map {List.reverse V} fun{$Y} {List.drop {List.dropWhile Xr fun{$X} X\='in' end} 1} end}.1)
+            else 
+                if VF then {DoSplitParamsAndBody Xr P V VF}
+                else {DoSplitParamsAndBody Xr X|P V VF} end
+            end
+        end
+    end
+in
+    fun {SplitParamsAndBody L}
+        {DoSplitParamsAndBody L nil nil false}
+    end
+end
 
 proc {ParseString S}
     case {AtomToList S}
@@ -95,9 +99,23 @@ proc {ParseString S}
                         else Xr.1 end end} 
                     params:Xr)})} end
                 
-                {Browse {Curry {Infix2Prefix @FUNCTIONS.X.body}}}
-                {Browse 'Result of evaluation'}
-                {Browse {Evaluate {Curry {Infix2Prefix @FUNCTIONS.X.body}}}}
+                if @FUNCTIONS.X.a then 
+                    {Browse {Curry {Infix2Prefix @FUNCTIONS.X.body}}}
+                    {Browse 'Result of evaluation for the variable'}
+                    {Browse {Evaluate {Curry {Infix2Prefix @FUNCTIONS.X.body}}}}
+                    {Browse 'Result of evaluation for the varibale'}
+                    FUNCTIONS := {Adjoin @FUNCTIONS functions(X:{Adjoin @FUNCTIONS.X function(
+                        vars: {Map @FUNCTIONS.X.vars fun {$ P} 
+                            if {List.member P ['*' '/' '+' '-' '(' ')']} then P 
+                            else {String.toAtom {Int.toString {Evaluate {Curry {Infix2Prefix @FUNCTIONS.X.body}}}}} end end} 
+                        params:Xr)})}
+                    {Browse @FUNCTIONS.X}
+                    {Browse {Evaluate {Curry {Infix2Prefix @FUNCTIONS.X.vars}}}}
+                else
+                    {Browse {Curry {Infix2Prefix @FUNCTIONS.X.body}}}
+                    {Browse 'Result of evaluation'}
+                    {Browse {Evaluate {Curry {Infix2Prefix @FUNCTIONS.X.body}}}}
+                end
             else
                 % else, throw error
                 {Browse 'Error: Function not defined'}
@@ -206,20 +224,20 @@ FUNCTIONS = {Cell.new nil}
 % ------------------------------------------------------------------------------
 % FIFTH EXAMPLE: fourtimes
 {ParseString 'fun fourtimes x = var y = x * x in y + y'}
-    % Function added
-    % Tree Added for
-    % + * x x * x x
-    % tree(tree('+' tree(tree('*' x) x)) tree(tree('*' x) x))
-    {Browse ''}
+% Function added
+% Tree Added for
+% + * x x * x x
+% tree(tree('+' tree(tree('*' x) x)) tree(tree('*' x) x))
+{Browse ''}
     
-    {Browse @FUNCTIONS}
-    % functions(square:function(body:[x * x] params:[x]) double:function(body:[x + x] params:[x]) sum:function(body:[x + y] params:[x y]) test:function(body:[( x * x ) + ( y * y )] params:[x y]))
-    {Browse ''}
-    
-    {ParseString 'test 3 5'}
-    % test
-    % Function defined
-    % tree(tree('+' tree(tree('*' 3) 3)) tree(tree('*' 5) 5))
-    % Result of evaluation
-    % 34
-    {Browse ''}
+{Browse @FUNCTIONS}
+% functions(square:function(body:[x * x] params:[x]) double:function(body:[x + x] params:[x]) sum:function(body:[x + y] params:[x y]) test:function(body:[( x * x ) + ( y * y )] params:[x y]))
+{Browse ''}
+
+{ParseString 'fourtimes 2'}
+% test
+% Function defined
+% tree(tree('+' tree(tree('*' 3) 3)) tree(tree('*' 5) 5))
+% Result of evaluation
+% 34
+{Browse ''}
