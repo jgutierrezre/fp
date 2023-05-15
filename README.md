@@ -2,8 +2,8 @@
 ## ISIS-4217 Paradigmas de programación
 ## 2023-I
 ### Students
-- Juan Pablo Gutiérrez Restrepo
-- Laura Rodríguez
+- Juan Pablo Gutiérrez Restrepo - 202315877
+- Laura Andrea Rodríguez Rodríguez - 201816069
 
 ### Files information
 - The main file is parser.oz. This is the file that is responsible for interacting with the user and performing the operations that the user requests.
