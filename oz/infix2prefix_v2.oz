@@ -1,5 +1,9 @@
 declare
-
+%% /////////////////////////////////////////////////////////////////////////////
+%%
+%%                               INFIX - POSTFIX
+%%
+%% /////////////////////////////////////////////////////////////////////////////
 %% Split a string by spaces
 fun {AtomToList Data}
     {List.map {String.tokens {Atom.toString Data} & } fun {$ X} {String.toAtom X} end}
