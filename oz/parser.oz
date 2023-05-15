@@ -1,5 +1,11 @@
 declare
 
+%% /////////////////////////////////////////////////////////////////////////////
+%%
+%%                                   PARSER
+%%
+%% /////////////////////////////////////////////////////////////////////////////
+
 fun {AtomToList Data}
     {List.map {String.tokens {Atom.toString Data} & } fun {$ X} {String.toAtom X} end}
 end
@@ -12,25 +18,6 @@ proc {AddFunction F}
     FUNCTIONS := {Record.adjoin @FUNCTIONS F}
 end
 
-% local
-%     fun {DoSplitParamsAndBody L P}
-%         case L
-%         of X|Xr then
-%             case X
-%             of '=' then function(params:{List.reverse P} body:Xr)
-%             else {DoSplitParamsAndBody Xr X|P}
-%             end
-%         end
-%     end
-% in
-%     fun {SplitParamsAndBody L}
-%         {DoSplitParamsAndBody L nil}
-%     end
-% end
-
-% Admit vars
-% 'fun fourtimes x = var y = x * x in y + y'}
-% function(params: 'x' body: 'y + y' var: 'y' varbody:'x * x')
 local
     fun {DoSplitParamsAndBody L P V VF} % P: lista de parametros , V: lista de variables , VF: si tiene variables o no
         case L
@@ -124,6 +111,13 @@ proc {ParseString S}
     end
 end
 
+%% /////////////////////////////////////////////////////////////////////////////
+%%
+%%                                   EXAMPLES
+%%
+%% /////////////////////////////////////////////////////////////////////////////
+
+% In order to run the parser, run first the file fp.oz
 
 FUNCTIONS = {Cell.new nil}
 

@@ -100,5 +100,5 @@ end
 %{Browse {Infix2Prefix {Str2Lst "fun square x = x * x"}}}
 % * fun square x = x x
 
-{Browse {StringListJoin {Infix2Prefix {AtomToList '( x * x ) + ( y * y )'}}}}
+% {Browse {StringListJoin {Infix2Prefix {AtomToList '( x * x ) + ( y * y )'}}}}
 % + * x x * y y

@@ -1,5 +1,10 @@
 declare
 
+%% /////////////////////////////////////////////////////////////////////////////
+%%
+%%                              ADITIONAL FUNCTIONS
+%%
+%% /////////////////////////////////////////////////////////////////////////////
 %% Split a string by spaces
 fun {AtomToList Data}
     {List.map {String.tokens {Atom.toString Data} & } fun {$ X} {String.toAtom X} end}
@@ -23,6 +28,11 @@ fun {StringListJoin Data}
     }
 end
 
+%% /////////////////////////////////////////////////////////////////////////////
+%%
+%%                               INFIX - POSTFIX
+%%
+%% /////////////////////////////////////////////////////////////////////////////
 %% Data is a list of the form ["(", "X", "+", "Y", ")"] en returns id prefix form ["+" "X" "Y"]
 local
     fun {ReverseWithParentheses Data Ans}
@@ -86,6 +96,12 @@ in
     end
 end
 
+%% /////////////////////////////////////////////////////////////////////////////
+%%
+%%                                  CURRY
+%%
+%% /////////////////////////////////////////////////////////////////////////////
+
 %% Data is a prefix form ["+" "X" "Y"] and returns the graph representation
 local
     fun {DoCurry Data}
@@ -132,6 +148,11 @@ in
     end
 end
 
+%% /////////////////////////////////////////////////////////////////////////////
+%%
+%%                                  EVALUATOR
+%%
+%% /////////////////////////////////////////////////////////////////////////////
 local
     fun {RightEvaluate T}
         if {Number.is T} then T
@@ -161,41 +182,33 @@ in
     end
 end
 
+
 %% /////////////////////////////////////////////////////////////////////////////
 %%
-%% It is necessary that every element in a program its separated by single space.
+%%                                   EXAMPLES
 %%
 %% /////////////////////////////////////////////////////////////////////////////
 
 
-%{Browse {Infix2Prefix {Str2Lst 'fun hola X Y Z = var A = X * Y var B = A + 2 in A * B + Z'}}}
+% % + * x x * y y
+% % fun square x = x * x
+% {Browse {StringListJoin {Infix2Prefix {AtomToList 'x * x'}}}}
+% {Browse {Curry {Infix2Prefix {AtomToList 'x * x'}}}}
+% {Browse ''}
 
-%{Browse {Infix2Prefix {AtomToList 'fun square x = x * x'}}}
-% * fun square x = x x
+% % ( x * x ) + ( y * y )
+% {Browse {StringListJoin {Infix2Prefix {AtomToList '( x * x ) + ( y * y )'}}}}
+% {Browse {Curry {Infix2Prefix {AtomToList '( x * x ) + ( y * y )'}}}}
+% {Browse ''}
 
-%{Browse {Infix2Prefix {AtomToList '( x * x ) + ( y * y )'}}}
-% + * x x * y y
+% % fun square x = x * x
+% % square square x
+% {Browse {StringListJoin {Infix2Prefix {AtomToList '( x * x ) * ( x * x )'}}}}
+% {Browse {Curry {Infix2Prefix {AtomToList '( x * x ) x ( x * x )'}}}}
+% {Browse ''}
 
-{Browse {StringListJoin {Infix2Prefix {AtomToList 'x * x'}}}}
-
-{Browse {Curry {Infix2Prefix {AtomToList 'x * x'}}}}
-
-{Browse {Evaluate {Curry {Infix2Prefix {AtomToList '3 * 3'}}}}}
-% tree(tree('*' x) x)
-
-
-% X = 10
-% T = tree(tree('*' X) X)
-
-% {Browse T}
-
-{Browse {Curry {Infix2Prefix {AtomToList '( x * x ) + ( y * y )'}}}}
-% tree(tree('+' tree(tree('*' x) x)) tree(tree('*' y)) y)
-
-{Browse {StringListJoin {Infix2Prefix {AtomToList '( x * x ) + ( y * y )'}}}}
-% + * x x * y y
-
-{Browse {Curry {Infix2Prefix {AtomToList '( x + 1 ) * ( x - 1 )'}}}}
-% tree(tree('*' tree(tree('+' x) 1)) tree(tree('-' x) 1))
-
-{Browse {Evaluate {Curry {Infix2Prefix {AtomToList '( 3 + 1 ) * ( 3 - 1 )'}}}}}
+% % fun sqr x = (x+1) * (x-1)
+% % sqr x
+% {Browse {StringListJoin {Infix2Prefix {AtomToList '( x + 1 ) * ( x - 1 )'}}}}
+% {Browse {Curry {Infix2Prefix {AtomToList '( x + 1 ) * ( x - 1 )'}}}}
+% {Browse ''}
